@@ -179,10 +179,45 @@ function checkout() {
  const msg = 'Olá, Gi! 💕 Quero fazer um pedido:\n\n'+lines+'\n\n*Total dos produtos: '+money(total)+'*\n\nComo combinamos a entrega/retirada e o pagamento?';
  window.open('https://wa.me/'+number+'?text='+encodeURIComponent(msg),'_blank','noopener,noreferrer');
 }
+let firstAccessMode = false;
+function setFirstAccessMode(enabled) {
+ firstAccessMode = enabled;
+ $('login-submit').textContent = enabled ? 'Criar minha conta' : 'Entrar no painel';
+ $('first-access-toggle').textContent = enabled ? 'Já tenho conta — voltar ao login' : 'Primeiro acesso? Criar conta';
+ $('login-password').setAttribute('autocomplete', enabled ? 'new-password' : 'current-password');
+ $('login-password').setAttribute('minlength', enabled ? '8' : '1');
+ $('login-password').setAttribute('placeholder', enabled ? 'Crie uma senha com pelo menos 8 caracteres' : '');
+ $('login-help').textContent = enabled
+  ? 'Use o e-mail da administradora e crie uma senha com pelo menos 8 caracteres. Após confirmar o e-mail, a conta ainda precisa ser autorizada no painel.'
+  : 'Se ainda não tem senha, use “Primeiro acesso” para cadastrar sua conta. A liberação de administradora será validada separadamente.';
+ $('admin-notice').classList.add('hidden');
+}
 async function login(e) {
  e.preventDefault();
  $('admin-notice').classList.add('hidden');
- const {data,error} = await supabase.auth.signInWithPassword({email:$('login-email').value.trim(),password:$('login-password').value});
+ const email = $('login-email').value.trim();
+ const password = $('login-password').value;
+ if(firstAccessMode) {
+  if(password.length < 8) { notice('Crie uma senha com pelo menos 8 caracteres.'); return; }
+  const {data,error} = await supabase.auth.signUp({
+   email,
+   password,
+   options: { emailRedirectTo: 'https://docesdagi-tau.vercel.app/admin' }
+  });
+  if(error) {
+   notice(error.message.includes('already registered') || error.message.includes('already been registered')
+    ? 'Esse e-mail já possui uma conta. Volte ao login ou aguarde para tentar recuperar a senha.'
+    : 'Não foi possível criar a conta: ' + error.message);
+   return;
+  }
+  setFirstAccessMode(false);
+  $('login-password').value = '';
+  notice(data.session
+   ? 'Conta criada. Acesso de administradora ainda precisa ser autorizado antes de gerenciar produtos.'
+   : 'Conta criada! Confira o e-mail para confirmar o cadastro. Depois, a conta ainda precisa ser autorizada como administradora.');
+  return;
+ }
+ const {data,error} = await supabase.auth.signInWithPassword({email,password});
  if(error){notice('Não foi possível entrar. Confira o e-mail, a senha e se sua conta está autorizada como administradora.');return}
  session=data.session;
  showAdmin();
@@ -282,6 +317,7 @@ $('cart-backdrop').addEventListener('click',e=>{if(e.target===$('cart-backdrop')
 $('admin-link').onclick=goAdmin;
 $('back-store').onclick=goStore;
 $('login-form').addEventListener('submit',login);
+$('first-access-toggle').addEventListener('click',()=>setFirstAccessMode(!firstAccessMode));
 $('admin-logout').onclick=logout;
 $('product-form').addEventListener('submit',saveProduct);
 $('cancel-edit').onclick=resetProductForm;
