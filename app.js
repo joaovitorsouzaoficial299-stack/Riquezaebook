@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 const SUPABASE_URL = 'https://dcnzcdkptpuwbmogrhes.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_2tMBuyEYfg0Zm08_zCggIg_Mtr9_I32';
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-const DEFAULT_WHATSAPP = '';
+const DEFAULT_WHATSAPP = '5562993150343';
 const $ = id => document.getElementById(id);
 const money = value => new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' }).format(Number(value)||0);
 const sampleProducts = [
