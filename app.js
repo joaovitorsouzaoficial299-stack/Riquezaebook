@@ -185,10 +185,10 @@ function closeProductModal() {
 }
 function checkoutModalProduct() {
  if (!modalProduct || modalQuantity < 1) return;
- const number = (whatsappNumber || '').replace(/\\D/g, '');
+ const number = (whatsappNumber || '').replace(/\D/g, '');
  if (!number) { toast('O WhatsApp da loja ainda precisa ser configurado.'); return; }
  const total = Number(modalProduct.price) * modalQuantity;
- const msg = 'Olá, Gi! 💕 Quero fazer um pedido:\\n\\n• ' + modalProduct.name + ' — ' + modalQuantity + 'x ' + money(modalProduct.price) + ' = ' + money(total) + '\\n\\n*Total dos produtos: ' + money(total) + '*\\n\\nComo combinamos a entrega/retirada e o pagamento?';
+ const msg = 'Olá, Gi! 💕 Quero fazer um pedido:\n\n• ' + modalProduct.name + ' — ' + modalQuantity + 'x ' + money(modalProduct.price) + ' = ' + money(total) + '\n\n*Total dos produtos: ' + money(total) + '*\n\nComo combinamos a entrega/retirada e o pagamento?';
  window.open('https://wa.me/' + number + '?text=' + encodeURIComponent(msg), '_blank', 'noopener,noreferrer');
 }
 
