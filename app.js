@@ -121,10 +121,77 @@ function renderProducts() {
   const sold = Number(p.stock)<=0 ? '<span class="sold-tag">ESGOTADO</span>' : '';
   const oldPrice = p.original_price && Number(p.original_price)>Number(p.price) ? '<del>'+money(p.original_price)+'</del>' : '';
   card.innerHTML = '<div class="product-image">'+image+sale+sold+'</div><div class="product-details"><span class="product-category">'+escapeHtml(p.category||'Delícias')+'</span><h3>'+escapeHtml(p.name)+'</h3><p>'+escapeHtml(p.description||'Uma delícia preparada para você.')+'</p><div class="product-bottom"><div class="price-stack">'+oldPrice+'<strong>'+money(p.price)+'</strong></div><button class="add-button" '+(Number(p.stock)<=0?'disabled':'')+' aria-label="Adicionar ao carrinho">+</button></div><small class="stock-label">'+(Number(p.stock)<=0?'Estoque: 0 unidades · Esgotado':'Estoque: '+Number(p.stock)+' '+(Number(p.stock)===1?'unidade':'unidades'))+'</small></div>';
-  card.querySelector('.add-button').onclick = ()=>{addToCart(p,1);toast('Adicionado à sua sacola ♡')};
+  card.querySelector('.add-button').onclick = e=>{e.stopPropagation();addToCart(p,1);toast('Adicionado à sua sacola ♡')};
+  card.style.cursor = 'pointer';
+  card.setAttribute('tabindex','0');
+  card.setAttribute('role','button');
+  card.setAttribute('aria-label','Ver detalhes de '+p.name);
+  card.onclick = e => { if (!e.target.closest('.add-button')) openProductModal(p); };
+  card.onkeydown = e => { if ((e.key === 'Enter' || e.key === ' ') && e.target === card) { e.preventDefault(); openProductModal(p); } };
   root.append(card);
  });
 }
+
+let modalProduct = null;
+let modalQuantity = 1;
+function ensureProductModal() {
+ if ($('product-modal-backdrop')) return;
+ const backdrop = document.createElement('div');
+ backdrop.id = 'product-modal-backdrop';
+ backdrop.className = 'product-modal-backdrop hidden';
+ backdrop.innerHTML = '<section class="product-modal" role="dialog" aria-modal="true" aria-labelledby="product-modal-title"><button type="button" class="product-modal-close" aria-label="Fechar">×</button><div class="product-modal-content"><div class="product-modal-image" id="product-modal-image"></div><div class="product-modal-info"><span id="product-modal-category" class="product-category"></span><h2 id="product-modal-title"></h2><div class="product-modal-prices"><strong id="product-modal-price"></strong><del id="product-modal-old-price" class="hidden"></del></div><p id="product-modal-stock" class="product-modal-stock"></p><p id="product-modal-description" class="product-modal-description"></p><div class="product-modal-quantity"><strong>Quantidade</strong><div class="quantity-control"><button type="button" id="product-modal-minus" aria-label="Diminuir quantidade">−</button><span id="product-modal-quantity">1</span><button type="button" id="product-modal-plus" aria-label="Aumentar quantidade">+</button></div></div><div class="product-modal-total"><span>Total do pedido</span><strong id="product-modal-total"></strong></div><button type="button" id="product-modal-checkout" class="primary full product-modal-checkout">Finalizar pelo WhatsApp <span>↗</span></button></div></div></section>';
+ document.body.append(backdrop);
+ backdrop.querySelector('.product-modal-close').onclick = closeProductModal;
+ backdrop.addEventListener('click', e => { if (e.target === backdrop) closeProductModal(); });
+ $('product-modal-minus').onclick = () => updateModalQuantity(-1);
+ $('product-modal-plus').onclick = () => updateModalQuantity(1);
+ $('product-modal-checkout').onclick = checkoutModalProduct;
+ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeProductModal(); });
+}
+function openProductModal(p) {
+ if (Number(p.stock) <= 0) { toast('Este produto está esgotado no momento.'); return; }
+ ensureProductModal();
+ modalProduct = p; modalQuantity = 1;
+ $('product-modal-category').textContent = p.category || 'Delícias';
+ $('product-modal-title').textContent = p.name || 'Delícia da Gi';
+ $('product-modal-price').textContent = money(p.price);
+ const hasOldPrice = p.original_price && Number(p.original_price) > Number(p.price);
+ $('product-modal-old-price').textContent = hasOldPrice ? money(p.original_price) : '';
+ $('product-modal-old-price').classList.toggle('hidden', !hasOldPrice);
+ $('product-modal-stock').textContent = 'Estoque: ' + Number(p.stock) + ' ' + (Number(p.stock) === 1 ? 'unidade' : 'unidades');
+ $('product-modal-description').textContent = p.description || 'Uma delícia preparada para deixar seu dia mais gostoso.';
+ $('product-modal-image').innerHTML = p.image_url ? '<img src="' + escapeAttr(p.image_url) + '" alt="' + escapeAttr(p.name) + '">' : '<div class="product-modal-placeholder">🍫<small>DOCES DA GI</small></div>';
+ $('product-modal-plus').disabled = modalQuantity >= Number(p.stock);
+ $('product-modal-minus').disabled = true;
+ $('product-modal-quantity').textContent = modalQuantity;
+ $('product-modal-total').textContent = money(Number(p.price) * modalQuantity);
+ $('product-modal-checkout').disabled = false;
+ $('product-modal-backdrop').classList.remove('hidden');
+ document.body.classList.add('modal-open');
+}
+function updateModalQuantity(delta) {
+ if (!modalProduct) return;
+ modalQuantity = Math.max(1, Math.min(Number(modalProduct.stock), modalQuantity + delta));
+ $('product-modal-quantity').textContent = modalQuantity;
+ $('product-modal-total').textContent = money(Number(modalProduct.price) * modalQuantity);
+ $('product-modal-minus').disabled = modalQuantity <= 1;
+ $('product-modal-plus').disabled = modalQuantity >= Number(modalProduct.stock);
+}
+function closeProductModal() {
+ const backdrop = $('product-modal-backdrop');
+ if (backdrop) backdrop.classList.add('hidden');
+ document.body.classList.remove('modal-open');
+ modalProduct = null;
+}
+function checkoutModalProduct() {
+ if (!modalProduct || modalQuantity < 1) return;
+ const number = (whatsappNumber || '').replace(/\\D/g, '');
+ if (!number) { toast('O WhatsApp da loja ainda precisa ser configurado.'); return; }
+ const total = Number(modalProduct.price) * modalQuantity;
+ const msg = 'Olá, Gi! 💕 Quero fazer um pedido:\\n\\n• ' + modalProduct.name + ' — ' + modalQuantity + 'x ' + money(modalProduct.price) + ' = ' + money(total) + '\\n\\n*Total dos produtos: ' + money(total) + '*\\n\\nComo combinamos a entrega/retirada e o pagamento?';
+ window.open('https://wa.me/' + number + '?text=' + encodeURIComponent(msg), '_blank', 'noopener,noreferrer');
+}
+
 function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function escapeAttr(v){return escapeHtml(v)}
 function addToCart(p,delta) {
@@ -306,6 +373,7 @@ async function deleteProduct(p) {
  await loadAdminProducts();await loadProducts();notice('Produto excluído.');
 }
 
+ensureProductModal();
 $('open-cart').onclick=()=>$('cart-backdrop').classList.remove('hidden');
 $('close-cart').onclick=()=>$('cart-backdrop').classList.add('hidden');
 $('cart-backdrop').addEventListener('click',e=>{if(e.target===$('cart-backdrop'))$('cart-backdrop').classList.add('hidden')});
