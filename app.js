@@ -173,7 +173,7 @@ function checkout() {
  const items = currentCart();
  if(!items.length) return;
  const number = (whatsappNumber||'').replace(/\D/g,'');
- if(!number) {toast('O WhatsApp da loja ainda precisa ser configurado.');goAdmin();return}
+ if(!number) {toast('O WhatsApp da loja ainda precisa ser configurado.');return}
  const total = items.reduce((sum,item)=>sum+Number(item.product.price)*item.qty,0);
  const lines = items.map(({product,qty})=>'• '+product.name+' — '+qty+'x '+money(product.price)+' = '+money(product.price*qty)).join('\n');
  const msg = 'Olá, Gi! 💕 Quero fazer um pedido:\n\n'+lines+'\n\n*Total dos produtos: '+money(total)+'*\n\nComo combinamos a entrega/retirada e o pagamento?';
@@ -314,7 +314,6 @@ async function deleteProduct(p) {
 $('open-cart').onclick=()=>$('cart-backdrop').classList.remove('hidden');
 $('close-cart').onclick=()=>$('cart-backdrop').classList.add('hidden');
 $('cart-backdrop').addEventListener('click',e=>{if(e.target===$('cart-backdrop'))$('cart-backdrop').classList.add('hidden')});
-$('admin-link').onclick=goAdmin;
 $('back-store').onclick=goStore;
 $('login-form').addEventListener('submit',login);
 $('first-access-toggle').addEventListener('click',()=>setFirstAccessMode(!firstAccessMode));
