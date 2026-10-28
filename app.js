@@ -41,11 +41,6 @@ function toast(message) {
  document.body.append(box);
  setTimeout(() => box.remove(), 6000);
 }
-function goAdmin() {
- history.pushState({}, '', '/admin');
- showAdmin();
- window.scrollTo(0,0);
-}
 function goStore() {
  history.pushState({}, '', '/');
  $('admin-view').classList.add('hidden');
