@@ -30,3 +30,17 @@ body.modal-open{overflow:hidden}
 @keyframes productModalIn{from{opacity:0;transform:translateY(10px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(max-width:640px){.product-modal-backdrop{align-items:flex-end;padding:0}.product-modal{width:100%;max-height:92dvh;border-radius:16px 16px 0 0;overflow-y:auto}.product-modal-content{grid-template-columns:1fr;gap:0}.product-modal-image{min-height:0;height:245px;max-height:245px}.product-modal-image img{min-height:0;height:245px;max-height:245px}.product-modal-placeholder{min-height:245px;font-size:70px}.product-modal-info{padding:22px 21px calc(22px + env(safe-area-inset-bottom))}.product-modal-info h2{font-size:25px;margin:8px 0 12px}.product-modal-prices strong{font-size:24px}.product-modal-description{margin:12px 0 18px;font-size:12px}.product-modal-quantity{padding:13px 0}.product-modal-total{margin:16px 0}.product-modal-checkout{position:sticky;bottom:0}}
 @media(min-width:641px) and (max-height:650px){.product-modal-image,.product-modal-image img,.product-modal-placeholder{min-height:300px}.product-modal-info{padding:28px}}
+
+/* Janela de edição do produto no painel */
+.edit-product-backdrop{position:fixed;inset:0;z-index:100;background:rgba(39,25,22,.62);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:22px;overflow-y:auto}
+.edit-product-backdrop.hidden{display:none}
+.edit-product-modal{width:min(650px,100%);max-height:min(92vh,900px);overflow-y:auto;background:#fffdfb;border:1px solid #eadbd2;border-radius:12px;box-shadow:0 28px 90px rgba(30,15,12,.3);animation:productModalIn .2s ease-out}
+.edit-product-modal-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 25px;background:#fffdfb;border-bottom:1px solid var(--line)}
+.edit-product-modal-head p{margin:6px 0 0;font-size:12px;color:var(--muted)}
+.edit-product-close{flex-shrink:0;font-size:27px}
+.edit-product-modal-body{padding:22px 25px 26px}
+.edit-product-modal .product-form{border:0;padding:0;background:transparent}
+.edit-product-modal .product-form h3{font-size:24px;margin-bottom:20px}
+.edit-product-modal .form-row{gap:14px}
+body.edit-modal-open{overflow:hidden}
+@media(max-width:640px){.edit-product-backdrop{align-items:flex-end;padding:0}.edit-product-modal{width:100%;max-height:94dvh;border-radius:16px 16px 0 0}.edit-product-modal-head{padding:18px 20px}.edit-product-modal-body{padding:18px 20px calc(22px + env(safe-area-inset-bottom))}.edit-product-modal .form-row{flex-direction:column;gap:0}}
