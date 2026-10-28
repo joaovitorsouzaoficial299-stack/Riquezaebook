@@ -311,7 +311,27 @@ function renderAdminProducts() {
   root.append(row);
  });
 }
+function ensureEditModal() {
+ if($('edit-product-backdrop')) return;
+ const backdrop=document.createElement('div');
+ backdrop.id='edit-product-backdrop';
+ backdrop.className='edit-product-backdrop hidden';
+ backdrop.innerHTML='<section class="edit-product-modal" role="dialog" aria-modal="true" aria-labelledby="form-title"><div class="edit-product-modal-head"><div><span class="eyebrow">CATÁLOGO DA LOJA</span><p>Atualize as informações do produto</p></div><button type="button" class="close-button edit-product-close" aria-label="Fechar edição">×</button></div><div class="edit-product-modal-body"></div></section>';
+ document.body.append(backdrop);
+ backdrop.querySelector('.edit-product-close').onclick=closeEditModal;
+ backdrop.addEventListener('click',e=>{if(e.target===backdrop)closeEditModal()});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!backdrop.classList.contains('hidden'))closeEditModal()});
+}
+function closeEditModal() {
+ const backdrop=$('edit-product-backdrop');
+ if(!backdrop||backdrop.classList.contains('hidden')) return;
+ const grid=document.querySelector('.admin-grid');
+ if(grid&&$('product-form')) grid.insertBefore($('product-form'),grid.firstElementChild);
+ backdrop.classList.add('hidden');
+ document.body.classList.remove('edit-modal-open');
+}
 function editProduct(p) {
+ ensureEditModal();
  editingId=p.id;
  $('form-title').textContent='Editar produto';
  $('product-name').value=p.name||'';
@@ -323,7 +343,10 @@ function editProduct(p) {
  $('product-active').checked=!!p.active;
  $('product-image').value='';
  $('cancel-edit').classList.remove('hidden');
- $('product-form').scrollIntoView({behavior:'smooth',block:'start'});
+ $('edit-product-backdrop').querySelector('.edit-product-modal-body').append($('product-form'));
+ $('edit-product-backdrop').classList.remove('hidden');
+ document.body.classList.add('edit-modal-open');
+ $('product-name').focus();
 }
 function resetProductForm() {
  editingId=null;
@@ -332,9 +355,11 @@ function resetProductForm() {
  $('product-category').value='Doces';
  $('product-active').checked=true;
  $('cancel-edit').classList.add('hidden');
+ closeEditModal();
 }
 async function saveProduct(e) {
  e.preventDefault();
+ const wasEditing=Boolean(editingId);
  $('admin-notice').classList.add('hidden');
  const price=Number($('product-price').value);
  const originalRaw=$('product-original').value;
@@ -359,7 +384,7 @@ async function saveProduct(e) {
  resetProductForm();
  await loadAdminProducts();
  await loadProducts();
- notice(editingId?'Produto atualizado!':'Produto salvo com sucesso!');
+ notice(wasEditing?'Produto atualizado!':'Produto salvo com sucesso!');
 }
 async function toggleActive(p) {
  const {error}=await supabase.from('products').update({active:!p.active}).eq('id',p.id);
@@ -374,6 +399,7 @@ async function deleteProduct(p) {
 }
 
 ensureProductModal();
+ensureEditModal();
 $('open-cart').onclick=()=>$('cart-backdrop').classList.remove('hidden');
 $('close-cart').onclick=()=>$('cart-backdrop').classList.add('hidden');
 $('cart-backdrop').addEventListener('click',e=>{if(e.target===$('cart-backdrop'))$('cart-backdrop').classList.add('hidden')});
