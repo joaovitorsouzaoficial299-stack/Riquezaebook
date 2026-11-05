@@ -1,6 +1,6 @@
 const $ = id => document.getElementById(id);
 const STORE_KEY = 'horacerta_demo_v1';
-const today = () => new Date().toISOString().slice(0,10);
+const today = () => { const d=new Date(); return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-'); };
 const clock = () => new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
 const initials = name => name.split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase();
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -34,7 +34,7 @@ document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=
 $('menu-toggle').onclick=()=>$('sidebar').classList.toggle('open');
 $('logout-btn').onclick=()=>showToast('Você está no ambiente de demonstração.');
 function renderAll(){ $('company-name-side').textContent=state.company; $('settings-company').value=state.company; $('settings-tolerance').value=state.tolerance;renderDashboard();renderEmployees();renderRecords();renderOvertime();refreshTerminalEmployees();renderReports();if(portalEmployee)renderPortal(portalEmployee);if(window.lucide)lucide.createIcons()}
-function statusFor(emp){const rows=recordsToday(emp.id);if(!rows.length)return 'Ausente';const last=rows.at(-1).type;if(last==='Saída para intervalo')return 'Em intervalo';if(last==='Saída')return 'Ausente';const first=rows.find(r=>r.type==='Entrada');if(first&&first.time>'08:'+String(Number(state.tolerance)+0).padStart(2,'0'))return 'Atrasado';return 'Presente'}
+function statusFor(emp){const rows=recordsToday(emp.id);if(!rows.length)return 'Ausente';const last=rows.at(-1).type;if(last==='Saída para intervalo')return 'Em intervalo';if(last==='Saída')return 'Ausente';const first=rows.find(r=>r.type==='Entrada');if(first){const [h,m]=first.time.split(':').map(Number);const actual=h*60+m;const expected=8*60+Number(state.tolerance||0);if(actual>expected)return 'Atrasado';}return 'Presente'}
 function badge(s){const cls={'Presente':'green','Em intervalo':'blue','Atrasado':'amber','Ausente':'gray','Hora extra':'violet'}[s]||'gray';return '<span class="badge '+cls+'"><i></i>'+s+'</span>'}
 function renderDashboard(){
  const present=state.employees.filter(e=>['Presente','Em intervalo','Atrasado'].includes(statusFor(e))).length,absent=state.employees.length-present,late=state.employees.filter(e=>statusFor(e)==='Atrasado').length;
