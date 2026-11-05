@@ -72,4 +72,4 @@ $('reset-demo').onclick=()=>{if(confirm('Restaurar os dados originais da demonst
 $('export-records').onclick=()=>{const lines=[['Funcionário','Matrícula','Data','Horário','Tipo','Origem'],...state.records.map(r=>{const e=employee(r.employeeId);return [e?.name||'',e?.code||'',r.date,r.time,r.type,r.origin]})];const csv='\ufeff'+lines.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='horacerta-marcacoes-demo.csv';a.click();URL.revokeObjectURL(a.href)};
 $('notification-btn').onclick=()=>showToast('Você está em um ambiente de demonstração. Sem novas notificações.');
 $('records-date').value=today();setDate();renderAll();if(window.lucide)lucide.createIcons();
-window.addEventListener('beforeunload',stopCamera);
+window.addEventListener('storage',e=>{if(e.key===STORE_KEY){state=loadState();renderAll();}});\nwindow.addEventListener('beforeunload',stopCamera);
