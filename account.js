@@ -23,7 +23,7 @@
  $('tab-signup').onclick=()=>showMode('signup');$('tab-login').onclick=()=>showMode('login');
  $('signup-form').onsubmit=async e=>{e.preventDefault();busy('signup-button',true);try{
    const payload={company_name:$('company-name').value.trim(),legal_name:$('legal-name').value.trim(),cnpj:$('cnpj').value.trim()};
-   const {data,error}=await db.auth.signUp({email:$('signup-email').value.trim(),password:$('signup-password').value,options:{data:{...payload,owner_name:$('owner-name').value.trim()}}});
+   const {data,error}=await db.auth.signUp({email:$('signup-email').value.trim(),password:$('signup-password').value,options:{emailRedirectTo:window.location.origin+'/conta.html',data:{...payload,owner_name:$('owner-name').value.trim()}}});
    if(error)throw error;
    if(data.session&&data.user){await finishCompany(data.user,payload)}
    else message('Conta criada. Confirme seu e-mail pelo link enviado e depois entre nesta página para concluir o cadastro da empresa.');
