@@ -2,3 +2,6 @@
 
 /* Links styled as native controls in the independent screens. */
 .nav-item,.btn{text-decoration:none}
+
+/* Independent page links inherit the native control appearance. */
+.nav-item,.btn{text-decoration:none}
