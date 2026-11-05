@@ -5,3 +5,6 @@
 
 /* Independent page links inherit the native control appearance. */
 .nav-item,.btn{text-decoration:none}
+
+.face-enroll-box{border:1px solid var(--line);border-radius:9px;padding:13px;margin-top:5px;background:#fbfcfe}
+.face-enroll-box>div:first-child{display:grid;gap:5px}.face-enroll-box b{font-size:11px;display:flex;align-items:center;gap:7px}.face-enroll-box b svg{width:16px;color:var(--blue)}.face-enroll-box small,.face-privacy{font-size:9px;color:var(--muted);line-height:1.5}.face-enroll-actions{display:flex;gap:8px;margin:11px 0}.face-enroll-video{width:100%;max-height:180px;object-fit:cover;border-radius:7px;background:#17202c}.face-enroll-status{font-size:10px;color:var(--blue);margin:7px 0}.face-consent{display:flex;align-items:flex-start;gap:7px;font-size:9px;line-height:1.5;color:#4d5968;margin:9px 0}.face-consent input{margin-top:2px;flex:none}.face-privacy{display:block}
